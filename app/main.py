@@ -7,7 +7,9 @@ from sqlalchemy.orm import Session
 from app.database import engine, Base, SessionLocal, get_db
 from app.models import Song, Artist, Playlist, Review
 from app.seed import seed_database
+from app.auth import router as auth_router
 
+# Konfiguracja zapisywania logów do pliku app.log (Kryterium: Inne - zapisywanie logów do pliku)
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(message)s",
@@ -37,7 +39,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="PulseWave - Music Streaming & Multi-Protocol App",
     description="Projekt wykorzystujący HTTP REST, Cookies, WebSocket, SSE oraz MQTT",
-    version="0.1.0",
+    version="0.2.0",
     lifespan=lifespan,
 )
 
@@ -54,12 +56,16 @@ async def log_http_requests(request: Request, call_next):
     return response
 
 
+# Podpięcie routera autoryzacji REST (Etap 2)
+app.include_router(auth_router)
+
+
 @app.get("/api/health")
 def health_check(db: Session = Depends(get_db)):
-    """Endpoint diagnostyczny sprawdzający stan bazy danych w Etapie 1."""
+    """Endpoint diagnostyczny sprawdzający stan bazy danych."""
     return {
         "status": "ok",
-        "stage": "Etap 1 - Baza danych i modele gotowe",
+        "stage": "Etap 2 - Autoryzacja REST, JWT, bcrypt i Role gotowe",
         "counts": {
             "artists": db.query(Artist).count(),
             "songs": db.query(Song).count(),

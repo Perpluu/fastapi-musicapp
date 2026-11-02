@@ -2,10 +2,14 @@ from datetime import datetime
 from typing import List, Optional
 from pydantic import BaseModel, Field
 
-
 class UserCreate(BaseModel):
     username: str = Field(..., min_length=3, max_length=50)
     password: str = Field(..., min_length=4)
+
+
+class LoginRequest(BaseModel):
+    username: str
+    password: str
 
 
 class UserResponse(BaseModel):
@@ -17,6 +21,13 @@ class UserResponse(BaseModel):
         from_attributes = True
 
 
+class TokenResponse(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+    user: UserResponse
+
+
+# --- SCHEMATY ARTYSTÓW (CRUD #1) ---
 class ArtistBase(BaseModel):
     name: str
     bio: Optional[str] = ""
@@ -42,6 +53,7 @@ class ArtistResponse(ArtistBase):
         from_attributes = True
 
 
+# --- SCHEMATY PIOSENEK (CRUD #2) ---
 class SongBase(BaseModel):
     title: str
     genre: str
@@ -68,12 +80,13 @@ class SongResponse(SongBase):
     id: int
     plays_count: int
     artist: Optional[ArtistResponse] = None
-    recommended_score: Optional[int] = 0  # Wypełniane dynamicznie na podstawie ciasteczka music_taste
+    recommended_score: Optional[int] = 0
 
     class Config:
         from_attributes = True
 
 
+# --- SCHEMATY PLAYLIST (CRUD #3) ---
 class PlaylistBase(BaseModel):
     name: str
     description: Optional[str] = ""
@@ -98,6 +111,7 @@ class PlaylistResponse(PlaylistBase):
         from_attributes = True
 
 
+# --- SCHEMATY RECENZJI / KOMENTARZY (CRUD #4) ---
 class ReviewBase(BaseModel):
     rating: int = Field(..., ge=1, le=5)
     comment: str = Field(..., min_length=2)
